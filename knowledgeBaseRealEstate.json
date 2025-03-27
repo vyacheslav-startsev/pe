@@ -1,0 +1,142 @@
+[
+  {
+    "district": "Центральный",
+    "address": "ул. Кирова, д. 5",
+    "rooms": 3,
+    "total_area": 90,
+    "price": 85000
+  },
+  {
+    "district": "Ленинский",
+    "address": "мкр. Горский, д. 12",
+    "rooms": 4,
+    "total_area": 120,
+    "price": 125000
+  },
+  {
+    "district": "Октябрьский",
+    "address": "ул. Ленина, д. 45",
+    "rooms": 2,
+    "total_area": 60,
+    "price": 55000
+  },
+  {
+    "district": "Кировский",
+    "address": "пр. Карла Маркса, д. 33",
+    "rooms": 5,
+    "total_area": 160,
+    "price": 180000
+  },
+  {
+    "district": "Железнодорожный",
+    "address": "ул. Советская, д. 7",
+    "rooms": 1,
+    "total_area": 45,
+    "price": 40000
+  },
+  {
+    "district": "Советский",
+    "address": "мкр. ОбьГЭС, д. 18",
+    "rooms": 6,
+    "total_area": 200,
+    "price": 240000
+  },
+  {
+    "district": "Дзержинский",
+    "address": "ул. Богдана Хмельницкого, д. 22",
+    "rooms": 3,
+    "total_area": 85,
+    "price": 80000
+  },
+  {
+    "district": "Калининский",
+    "address": "ул. Титова, д. 9",
+    "rooms": 4,
+    "total_area": 110,
+    "price": 115000
+  },
+  {
+    "district": "Заельцовский",
+    "address": "ул. Немировича-Данченко, д. 14",
+    "rooms": 2,
+    "total_area": 70,
+    "price": 65000
+  },
+  {
+    "district": "Советский",
+    "address": "мкр. Академгородок, д. 3",
+    "rooms": 5,
+    "total_area": 150,
+    "price": 165000
+  },
+  {
+    "district": "Октябрьский",
+    "address": "ул. Фрунзе, д. 25",
+    "rooms": 3,
+    "total_area": 95,
+    "price": 90000
+  },
+  {
+    "district": "Центральный",
+    "address": "ул. Вокзальная магистраль, д. 11",
+    "rooms": 4,
+    "total_area": 130,
+    "price": 135000
+  },
+  {
+    "district": "Кировский",
+    "address": "ул. Зыряновская, д. 8",
+    "rooms": 1,
+    "total_area": 40,
+    "price": 38000
+  },
+  {
+    "district": "Железнодорожный",
+    "address": "ул. Гоголя, д. 17",
+    "rooms": 6,
+    "total_area": 190,
+    "price": 220000
+  },
+  {
+    "district": "Ленинский",
+    "address": "ул. Дуси Ковальчук, д. 6",
+    "rooms": 2,
+    "total_area": 65,
+    "price": 60000
+  },
+  {
+    "district": "Первомайский",
+    "address": "мкр. Затон, д. 10",
+    "rooms": 5,
+    "total_area": 170,
+    "price": 195000
+  },
+  {
+    "district": "Калининский",
+    "address": "ул. Красина, д. 30",
+    "rooms": 3,
+    "total_area": 100,
+    "price": 95000
+  },
+  {
+    "district": "Дзержинский",
+    "address": "ул. Пирогова, д. 4",
+    "rooms": 4,
+    "total_area": 140,
+    "price": 155000
+  },
+  {
+    "district": "Заельцовский",
+    "address": "ул. Сибревкома, д. 2",
+    "rooms": 2,
+    "total_area": 55,
+    "price": 48000
+  },
+  {
+    "district": "Первомайский",
+    "address": "ул. Инженерная, д. 21",
+    "rooms": 5,
+    "total_area": 180,
+    "price": 210000
+  }
+]

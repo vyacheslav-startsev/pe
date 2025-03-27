@@ -1,0 +1,831 @@
+{
+  "name": "Агент по аренде недвижимости",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -240,
+        -100
+      ],
+      "id": "173ab318-16c8-487a-9d3f-04717e8ab4ed",
+      "name": "Telegram Trigger",
+      "webhookId": "9200ec96-283d-4c9c-b329-6887ad48b88d",
+      "credentials": {
+        "telegramApi": {
+          "id": "oEsxBAUu3snSWaiS",
+          "name": "Telegram bot (my_real_estate_ai_agent_bot)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "longLivedToken",
+        "resource": "contacts",
+        "filter": {
+          "name": "={{ $json.message.from.first_name }} {{ $json.message.from.last_name }}"
+        },
+        "options": {
+          "with": [
+            "leads"
+          ]
+        }
+      },
+      "type": "n8n-nodes-amocrm.amocrm",
+      "typeVersion": 1,
+      "position": [
+        -60,
+        -100
+      ],
+      "id": "b6474202-397c-435b-88b9-d31c0f589961",
+      "name": "Ищем контакт",
+      "alwaysOutputData": true,
+      "credentials": {
+        "amocrmLongLivedApi": {
+          "id": "RSuetK4p04HBEsDd",
+          "name": "Amocrm Long Lived Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "longLivedToken",
+        "resource": "contacts",
+        "operation": "createContacts",
+        "collection": {
+          "contact": [
+            {
+              "first_name": "={{ $('Telegram Trigger').item.json.message.from.first_name }}",
+              "last_name": "={{ $('Telegram Trigger').item.json.message.from.last_name }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-amocrm.amocrm",
+      "typeVersion": 1,
+      "position": [
+        560,
+        0
+      ],
+      "id": "34e7aed3-35d4-4459-979b-21a291f8fe25",
+      "name": "Создаем новый контакт",
+      "alwaysOutputData": true,
+      "credentials": {
+        "amocrmLongLivedApi": {
+          "id": "RSuetK4p04HBEsDd",
+          "name": "Amocrm Long Lived Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "longLivedToken",
+        "resource": "leads",
+        "operation": "createLeads",
+        "collection": {
+          "lead": [
+            {
+              "pipeline_id": 9394598,
+              "status_id": 75246718,
+              "_embedded": {
+                "contacts": [
+                  {
+                    "id": {
+                      "contact": [
+                        {
+                          "id": "={{ $json.contact_id }}"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-amocrm.amocrm",
+      "typeVersion": 1,
+      "position": [
+        1320,
+        0
+      ],
+      "id": "05de619a-af91-465f-99d6-fe9cb479ebef",
+      "name": "Создаем новую сделку",
+      "alwaysOutputData": false,
+      "credentials": {
+        "amocrmLongLivedApi": {
+          "id": "RSuetK4p04HBEsDd",
+          "name": "Amocrm Long Lived Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "5eaa3fb5-6a01-4791-9206-20018666e516",
+              "leftValue": "={{ $json._embedded.contacts[0] }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "object",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        120,
+        -100
+      ],
+      "id": "47b015b1-9461-4620-bc55-9810e0ec875a",
+      "name": "Нашли контакт?",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "url": "https://vyacheslavstartsevgmailcom.amocrm.ru/api/v4/leads",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "filter[id]",
+              "value": "={{ $json.lead_ids }}"
+            },
+            {
+              "name": "filter[statuses][0][pipeline_id]",
+              "value": "9394598"
+            },
+            {
+              "name": "filter[statuses][0][status_id]",
+              "value": "75246718"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        560,
+        -160
+      ],
+      "id": "42418017-6cdc-4755-acd6-dbe46b4bd81a",
+      "name": "Ищем сделки по аренде",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "Ia2K2sqQN3xlK60v",
+          "name": "amoCRM Bearer token"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "8e4e3bba-6b66-4438-aa56-b9b11bc38ba7",
+              "leftValue": "={{ $json.hasField(\"p_data\") }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        900,
+        -160
+      ],
+      "id": "845319d2-2f06-408f-afa6-3e1f2ce30970",
+      "name": "Нашли сделку по аренде?"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "d22e4f3c-52b3-49a9-9faa-f4fa21b3bf63",
+              "name": "contact_id",
+              "value": "={{ $json._embedded?.contacts?.[0].id || $('Ищем контакт').item.json._embedded?.contacts?.[0].id }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1100,
+        0
+      ],
+      "id": "dba6054d-71e0-4e19-8e70-0298c67d3857",
+      "name": "contact_id"
+    },
+    {
+      "parameters": {
+        "jsCode": "\n// Loop over input items and add a new field called 'myNewField' to the JSON of each one\nfor (const item of $input.all()) {\n  leadIds = []\n  for (const lead of item.json._embedded.contacts[0]._embedded.leads) {\n    leadIds.push(lead.id)\n  }\n  item.json.lead_ids = leadIds;\n}\n\nreturn $input.all();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        380,
+        -160
+      ],
+      "id": "8f22d39a-6070-4746-b9ab-69bb0019bc43",
+      "name": "lead_ids"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\nfor (const item of $input.all()) {\n  if (item.json.data) {\n    item.json.p_data = JSON.parse(item.json.data);\n  } \n}\n\nreturn $input.all();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        720,
+        -160
+      ],
+      "id": "958a6556-f2a5-4e4e-89f3-a72d683db175",
+      "name": "p_data"
+    },
+    {
+      "parameters": {
+        "jsCode": "\n// Loop over input items and add a new field called 'myNewField' to the JSON of each one\nfor (const item of $input.all()) {\n  threadId = \"\"\n  if (item.json.p_data._embedded.leads[0].custom_fields_values) {\n    for (const field of item.json.p_data._embedded.leads[0].custom_fields_values) {\n      if (field.field_name == \"thread_id\") {\n        threadId = field.values[0].value\n        break\n      }   \n    }\n  }\n  item.json.thread_id = threadId;\n}\n\nreturn $input.all();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1160,
+        -180
+      ],
+      "id": "1cf0f670-619e-4a51-be6c-a284101c8a77",
+      "name": "thread_id"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "9622c135-8151-4925-9acd-32553c62093c",
+              "name": "lead_id",
+              "value": "={{ $json.p_data?._embedded?.leads?.[0].id || $json._embedded?.leads?.[0].id }}",
+              "type": "string"
+            },
+            {
+              "id": "6cf4a431-3c6f-4fd6-af50-37421ae8cce6",
+              "name": "thread_id",
+              "value": "={{ $json.thread_id || \"\" }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1540,
+        0
+      ],
+      "id": "7277153a-70a5-4b80-95c1-38d08d636e00",
+      "name": "Параметры сделки"
+    },
+    {
+      "parameters": {
+        "resource": "assistant",
+        "assistantId": {
+          "__rl": true,
+          "value": "asst_uAXAqzga1Ea2YjLNhJFpRYRg",
+          "mode": "list",
+          "cachedResultName": "Real Estate Rental"
+        },
+        "prompt": "define",
+        "text": "={{ $('Telegram Trigger').item.json.message.text }}",
+        "memory": "threadId",
+        "threadId": "={{ $json.thread_id }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -80,
+        320
+      ],
+      "id": "4e0e4ea5-9bec-471e-ace4-dac287420359",
+      "name": "OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "KoJwqrFrIJNVs56X",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "longLivedToken",
+        "resource": "leads",
+        "operation": "updateLeads",
+        "collection": {
+          "lead": [
+            {
+              "id": "={{ $('Параметры сделки').item.json.lead_id }}",
+              "status_id": 0,
+              "custom_fields_values": {
+                "custom_field": [
+                  {
+                    "data": "{\"id\":793435,\"type\":\"text\"}",
+                    "value": "={{ $json.threadId }}"
+                  }
+                ]
+              },
+              "request_id": ""
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-amocrm.amocrm",
+      "typeVersion": 1,
+      "position": [
+        520,
+        440
+      ],
+      "id": "f88243ca-c648-46a5-b854-754000e1d3fc",
+      "name": "Сохраняем thread_id в сделке",
+      "credentials": {
+        "amocrmLongLivedApi": {
+          "id": "RSuetK4p04HBEsDd",
+          "name": "Amocrm Long Lived Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "={{ $json.text }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1540,
+        360
+      ],
+      "id": "802e1342-7939-429e-8b45-89d9b009f4d6",
+      "name": "Telegram",
+      "webhookId": "1c316cd3-4aaa-4f33-9bb5-85ff1c481193",
+      "credentials": {
+        "telegramApi": {
+          "id": "oEsxBAUu3snSWaiS",
+          "name": "Telegram bot (my_real_estate_ai_agent_bot)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "6413737c-fc42-44c4-810c-e2173799e60b",
+              "leftValue": "={{ $('Параметры сделки').item.json.thread_id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        280,
+        320
+      ],
+      "id": "1218338a-cdde-417e-a2c1-ca1e4b2ed450",
+      "name": "В сделке есть thread_id"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\nfor (const item of $input.all()) {\n  item.json.text = $('OpenAI').item.json.output.replace(/\\【.*?\\】/g, '');\n}\n\nreturn $input.all();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1340,
+        360
+      ],
+      "id": "4abec819-5aa0-463c-85a7-aec536816843",
+      "name": "Удаляем лишние символы"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "be36d417-786b-44c0-a18e-cbc5ce2ecb99",
+              "leftValue": "={{ $json.output }}",
+              "rightValue": "systemTextByAi",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        760,
+        340
+      ],
+      "id": "67960fdb-cf8d-4932-a2a9-8f361e02697e",
+      "name": "Есть systemTextByAi"
+    },
+    {
+      "parameters": {
+        "jsCode": "function extractSystemTextData(text) {\n  // Регулярное выражение для поиска JSON-объекта между 【systemTextByAi: и 】\n  const regex = /【systemTextByAi:\\s*([\\s\\S]*?)】/;\n  const match = text.match(regex);\n  \n  if (!match || !match[1]) return null;\n\n  try {\n    // Парсинг найденной JSON-строки\n    return JSON.parse(match[1].trim());\n  } catch (e) {\n    console.error('Error parsing JSON:', e);\n    return null;\n  }\n}\n\nfor (const item of $input.all()) {\n  item.json.systemTextByAi = extractSystemTextData(item.json.output);\n}\n\nreturn $input.all();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        960,
+        240
+      ],
+      "id": "1ee56c05-096b-432f-8445-dbf1274f6160",
+      "name": "Извлекаем systemTextByAi"
+    },
+    {
+      "parameters": {
+        "authentication": "longLivedToken",
+        "resource": "leads",
+        "operation": "updateLeads",
+        "collection": {
+          "lead": [
+            {
+              "id": "={{ $('Параметры сделки').item.json.lead_id }}",
+              "status_id": 75246794,
+              "custom_fields_values": {
+                "custom_field": [
+                  {
+                    "data": "{\"id\":799713,\"type\":\"text\"}",
+                    "value": "={{ $json.systemTextByAi.name }}"
+                  },
+                  {
+                    "data": "{\"id\":799715,\"type\":\"text\"}",
+                    "value": "={{ $json.systemTextByAi.phone }}"
+                  },
+                  {
+                    "data": "{\"id\":799717,\"type\":\"text\"}",
+                    "value": "={{ $json.systemTextByAi.summarize }}"
+                  },
+                  {
+                    "data": "{\"id\":799719,\"type\":\"text\"}",
+                    "value": "={{ $json.systemTextByAi.quest }}"
+                  },
+                  {
+                    "data": "{\"id\":799711,\"type\":\"text\"}",
+                    "value": "={{ $json.systemTextByAi.district }}"
+                  },
+                  {
+                    "data": "{\"id\":799721,\"type\":\"text\"}",
+                    "value": "={{ $json.systemTextByAi.rooms }}"
+                  },
+                  {
+                    "data": "{\"id\":799723,\"type\":\"text\"}",
+                    "value": "={{ $json.systemTextByAi.date }}"
+                  },
+                  {
+                    "data": "{\"id\":799725,\"type\":\"text\"}",
+                    "value": "={{ $json.systemTextByAi.address }}"
+                  }
+                ]
+              },
+              "request_id": ""
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-amocrm.amocrm",
+      "typeVersion": 1,
+      "position": [
+        1140,
+        240
+      ],
+      "id": "29c91489-49ff-401c-a6f2-bca2c2b9c2ae",
+      "name": "Обновляем сделку",
+      "credentials": {
+        "amocrmLongLivedApi": {
+          "id": "RSuetK4p04HBEsDd",
+          "name": "Amocrm Long Lived Token account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Ищем контакт",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ищем контакт": {
+      "main": [
+        [
+          {
+            "node": "Нашли контакт?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Создаем новый контакт": {
+      "main": [
+        [
+          {
+            "node": "contact_id",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Создаем новую сделку": {
+      "main": [
+        [
+          {
+            "node": "Параметры сделки",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Нашли контакт?": {
+      "main": [
+        [
+          {
+            "node": "lead_ids",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Создаем новый контакт",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ищем сделки по аренде": {
+      "main": [
+        [
+          {
+            "node": "p_data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Нашли сделку по аренде?": {
+      "main": [
+        [
+          {
+            "node": "thread_id",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "contact_id",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "contact_id": {
+      "main": [
+        [
+          {
+            "node": "Создаем новую сделку",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "lead_ids": {
+      "main": [
+        [
+          {
+            "node": "Ищем сделки по аренде",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "p_data": {
+      "main": [
+        [
+          {
+            "node": "Нашли сделку по аренде?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "thread_id": {
+      "main": [
+        [
+          {
+            "node": "Параметры сделки",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Параметры сделки": {
+      "main": [
+        [
+          {
+            "node": "OpenAI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI": {
+      "main": [
+        [
+          {
+            "node": "В сделке есть thread_id",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Сохраняем thread_id в сделке": {
+      "main": [
+        [
+          {
+            "node": "Есть systemTextByAi",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "В сделке есть thread_id": {
+      "main": [
+        [
+          {
+            "node": "Есть systemTextByAi",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Сохраняем thread_id в сделке",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Удаляем лишние символы": {
+      "main": [
+        [
+          {
+            "node": "Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Есть systemTextByAi": {
+      "main": [
+        [
+          {
+            "node": "Извлекаем systemTextByAi",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Удаляем лишние символы",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Извлекаем systemTextByAi": {
+      "main": [
+        [
+          {
+            "node": "Обновляем сделку",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Обновляем сделку": {
+      "main": [
+        [
+          {
+            "node": "Удаляем лишние символы",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "86b680dc-89c5-47de-aaf8-ebdc771655c5",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "d3c195a1c90ba8f1f37ac1584494664fd0d57b069a8df2925f44442922b92646"
+  },
+  "id": "H1N0e58RA5DMyWmC",
+  "tags": []
+}
